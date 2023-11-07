@@ -2,7 +2,6 @@ const express = require("express");
 const path = require("path");
 const fsp = require("fs/promises");
 const suid = require("short-unique-id");
-const notes = require("./db/db.json");
 const PORT = process.env.PORT || 3001;
 
 const app = express();
@@ -20,7 +19,13 @@ app.get("/notes", (req, res) =>
   res.sendFile(path.join(__dirname, "./public/notes.html"))
 );
 
-app.get("/api/notes", (req, res) => res.json(notes));
+// API routes
+app.get("/api/notes", (req, res) =>
+  fsp
+    .readFile("./db/db.json", "utf8")
+    .then((data) => res.send(data))
+    .catch((error) => console.error(`Error getting file: ${error}`))
+);
 app.post("/api/notes", (req, res) => {
   console.info(`${req.method} request received to add a note.`);
   const { title, text } = req.body;
@@ -95,4 +100,3 @@ app.delete("/api/notes/:id", (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`App listening on port ${PORT}`));
-// [{"title": "Title","text": "Text"}]
